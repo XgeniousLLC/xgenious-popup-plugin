@@ -54,17 +54,17 @@ namespace Xgenious\PopupBuilder\Elementor;
                 return;
             }
             $elementor_widgets = array(
-                'popup',
+                'PopupWidget',
             );
 
             $elementor_widgets = apply_filters('xgenious_popup_elementor_widget',$elementor_widgets);
             sort($elementor_widgets);
             if ( is_array($elementor_widgets) && !empty($elementor_widgets) ) {
-                foreach ( $elementor_widgets as $widget ){
-                    if(file_exists(XGENIOUS_POPUP_PATH.'elementor/widgets/class-elementor-'.$widget.'-widget.php')){
-                        require_once XGENIOUS_POPUP_PATH.'elementor/widgets/class-elementor-'.$widget.'-widget.php';
-                    }
-                }
+//                foreach ( $elementor_widgets as $widget ){
+//                    if(file_exists(XGENIOUS_POPUP_PATH.'Elementor/Widgets/'.$widget.'.php')){
+//                        require_once XGENIOUS_POPUP_PATH.'Elementor/Widgets/'.$widget.'.php';
+//                    }
+//                }
             }
 
         }

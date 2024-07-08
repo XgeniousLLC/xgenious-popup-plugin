@@ -13,6 +13,7 @@ class XgeniousPopupBuilder {
 
     private function load_dependencies() {
         // Load any additional dependencies here
+
     }
 
     private function set_locale() {

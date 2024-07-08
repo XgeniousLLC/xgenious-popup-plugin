@@ -37,3 +37,4 @@ function run_xgenious_popup_builder() {
     $plugin = new \Xgenious\PopupBuilder\Includes\XgeniousPopupBuilder();
     $plugin->run();
 }
+run_xgenious_popup_builder();
