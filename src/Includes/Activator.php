@@ -10,21 +10,10 @@ class Activator {
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
 
-        $settings_table = $wpdb->prefix . 'xgenious_popup_settings';
+        $link_clicks_table = $wpdb->prefix . 'xgenious_popup_link_clicks';
         $analytics_table = $wpdb->prefix . 'xgenious_popup_analytics';
 
         $sql = [];
-
-//        $sql[] = "CREATE TABLE IF NOT EXISTS $settings_table (
-//            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-//            popup_id bigint(20) unsigned NOT NULL,
-//            setting_key varchar(191) NOT NULL,
-//            setting_value longtext NOT NULL,
-//            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-//            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-//            PRIMARY KEY (id),
-//            UNIQUE KEY popup_setting (popup_id, setting_key)
-//        ) $charset_collate;";
 
         $sql[] = "CREATE TABLE IF NOT EXISTS $analytics_table (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -42,6 +31,17 @@ class Activator {
             KEY popup_id (popup_id),
             KEY visitor_ip (visitor_ip),
             KEY created_at (created_at)
+        ) $charset_collate;";
+
+        $sql [] = "CREATE TABLE IF NOT EXISTS $link_clicks_table (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            popup_id bigint(20) unsigned NOT NULL,
+            visitor_ip varchar(45) NOT NULL,
+            link_url varchar(2083) NOT NULL,
+            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY popup_id (popup_id),
+            KEY visitor_ip (visitor_ip)
         ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');

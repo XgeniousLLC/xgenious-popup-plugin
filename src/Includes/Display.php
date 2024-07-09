@@ -9,8 +9,11 @@ class Display {
     public function __construct() {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
+        /* Ajax call for update visitor info and link click */
         add_action('wp_ajax_record_popup_view', array($this, 'record_popup_view'));
         add_action('wp_ajax_nopriv_record_popup_view', array($this, 'record_popup_view'));
+        add_action('wp_ajax_record_popup_link_click', array($this, 'record_popup_link_click'));
+        add_action('wp_ajax_nopriv_record_popup_link_click', array($this, 'record_popup_link_click'));
 
         $this->geoip_reader = new Reader(XGENIOUS_POPUP_PATH . 'data/GeoLite2-Country.mmdb');
     }
@@ -109,6 +112,31 @@ class Display {
                                 }
                             });
 
+                            // Track link clicks
+                            $popup.find('a').on('click', function(e) {
+                                var linkUrl = $(this).attr('href');
+                                $.ajax({
+                                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                                    type: 'POST',
+                                    data: {
+                                        action: 'record_popup_link_click',
+                                        popup_id: popupId,
+                                        link_url: linkUrl,
+                                        nonce: '<?php echo wp_create_nonce('record_popup_link_click_nonce'); ?>'
+                                    },
+                                    success: function(response) {
+                                        if (response.success) {
+                                            console.log('Link click recorded:', response.data);
+                                        } else {
+                                            console.error('Error recording link click:', response.data);
+                                        }
+                                    },
+                                    error: function(xhr, status, error) {
+                                        console.error('AJAX error:', status, error);
+                                    }
+                                });
+                            });
+
                             if (autoClose && autoCloseTime > 0) {
                                 var $progress = $popup.find('.xgenious-popup-progress');
                                 $progress.animate({
@@ -141,7 +169,36 @@ class Display {
         return $content;
     }
 
+    public function record_popup_link_click() {
+        check_ajax_referer('record_popup_link_click_nonce', 'nonce');
 
+        $popup_id = isset($_POST['popup_id']) ? intval($_POST['popup_id']) : 0;
+        $link_url = isset($_POST['link_url']) ? esc_url_raw($_POST['link_url']) : '';
+
+        if ($popup_id && $link_url) {
+            global $wpdb;
+            $table_name = $wpdb->prefix . 'xgenious_popup_link_clicks';
+
+            $result = $wpdb->insert(
+                $table_name,
+                array(
+                    'popup_id' => $popup_id,
+                    'visitor_ip' => $this->get_client_ip(),
+                    'link_url' => $link_url,
+                    'created_at' => current_time('mysql')
+                ),
+                array('%d', '%s', '%s', '%s')
+            );
+
+            if ($result === false) {
+                wp_send_json_error('Failed to insert data: ' . $wpdb->last_error);
+            } else {
+                wp_send_json_success('Link click recorded successfully');
+            }
+        } else {
+            wp_send_json_error('Invalid popup ID or link URL');
+        }
+    }
 
     private function should_display_popup($settings) {
         // Check display conditions

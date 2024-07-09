@@ -59,6 +59,8 @@ class AnalyticsPage {
 
         global $wpdb;
         $table_name = $wpdb->prefix . 'xgenious_popup_analytics';
+        $link_clicks_table = $wpdb->prefix . 'xgenious_popup_link_clicks';
+
 
         $where_clause = $wpdb->prepare("WHERE popup_id = %d", $popup_id);
         if ($start_date) {
@@ -106,6 +108,20 @@ class AnalyticsPage {
             GROUP BY DATE(created_at)
             ORDER BY date ASC
         ");
+
+        $link_clicks = $wpdb->get_results($wpdb->prepare(
+            "SELECT link_url, COUNT(*) as click_count
+         FROM $link_clicks_table
+         WHERE popup_id = %d
+         GROUP BY link_url
+         ORDER BY click_count DESC",
+            $popup_id
+        ));
+
+        $total_link_clicks = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $link_clicks_table WHERE popup_id = %d",
+            $popup_id
+        ));
 
         ?>
         <div class="wrap">
@@ -155,7 +171,24 @@ class AnalyticsPage {
                     <td><?php echo str_replace(',', ', ', $analytics->devices); ?></td>
                 </tr>
             </table>
-
+            <h3>Link Click Analytics</h3>
+            <p>Total Link Clicks: <?php echo $total_link_clicks; ?></p>
+            <table class="wp-list-table widefat fixed striped">
+                <thead>
+                <tr>
+                    <th>Link URL</th>
+                    <th>Click Count</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($link_clicks as $click): ?>
+                    <tr>
+                        <td><?php echo esc_url($click->link_url); ?></td>
+                        <td><?php echo $click->click_count; ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
             <h3>Recent Views [last 10]</h3>
             <table class="wp-list-table widefat fixed striped">
                 <thead>
