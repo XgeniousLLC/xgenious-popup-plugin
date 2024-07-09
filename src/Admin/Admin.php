@@ -3,9 +3,12 @@
 namespace Xgenious\PopupBuilder\Admin;
 
 class Admin {
+    private $analytics_page;
+
     public function __construct() {
         new PopupPostType();
         new PopupMetaFields();
+        $this->analytics_page = new AnalyticsPage();
 
         add_action('admin_enqueue_scripts', array($this, 'enqueue_styles'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
@@ -13,12 +16,36 @@ class Admin {
         add_action('admin_init', array($this, 'register_settings'));
     }
 
-    public function enqueue_styles() {
-        wp_enqueue_style('xgenious-popup-admin', XGENIOUS_POPUP_URL . 'assets/admin/css/popup-admin.css', array(), XGENIOUS_POPUP_VERSION, 'all');
+    public function enqueue_styles($hook) {
+        // Check if we're on the Xgenious Popup settings page or custom post type page
+        if ($this->is_xgenious_popup_admin_page($hook)) {
+            wp_enqueue_style('xgenious-popup-admin', XGENIOUS_POPUP_URL . 'assets/admin/css/popup-admin.css', array(), XGENIOUS_POPUP_VERSION, 'all');
+            if ($this->is_settings_page($hook)) {
+                wp_enqueue_script('chartjs', 'https://cdn.jsdelivr.net/npm/chart.js', array(), '3.7.0', true);
+            }
+        }
+    }
+    public function enqueue_scripts($hook) {
+        // Check if we're on the Xgenious Popup settings page or custom post type page
+        if ($this->is_xgenious_popup_admin_page($hook)) {
+            wp_enqueue_script('xgenious-popup-admin', XGENIOUS_POPUP_URL . 'assets/admin/js/popup-admin.js', array('jquery'), XGENIOUS_POPUP_VERSION, false);
+        }
     }
 
-    public function enqueue_scripts() {
-        wp_enqueue_script('xgenious-popup-admin', XGENIOUS_POPUP_URL . 'assets/admin/js/popup-admin.js', array('jquery'), XGENIOUS_POPUP_VERSION, false);
+    private function is_xgenious_popup_admin_page($hook) {
+        global $post_type;
+
+        // Check for the settings page
+        $settings_page = 'toplevel_page_xgenious-popup-builder';
+
+        // Check for the custom post type
+        $is_popup_post_type = ($hook == 'post-new.php' || $hook == 'post.php') && $post_type == 'xgenious_popup';
+
+        return $hook == $settings_page || $is_popup_post_type;
+    }
+
+    private function is_settings_page($hook) {
+        return $hook == 'toplevel_page_xgenious-popup-builder';
     }
 
     public function add_plugin_admin_menu() {
@@ -31,8 +58,19 @@ class Admin {
             'dashicons-admin-generic',
             100
         );
+        add_submenu_page(
+            'xgenious-popup-builder',
+            'Recent Views',
+            'Recent Views',
+            'manage_options',
+            'xgenious-popup-recent-views',
+            array($this, 'display_recent_views_page')
+        );
     }
-
+    public function display_recent_views_page() {
+        $recent_views_page = new RecentViewsPage();
+        $recent_views_page->render_page();
+    }
     public function display_plugin_setup_page() {
         include_once __DIR__ . '/partials/popup-admin-display.php';
     }

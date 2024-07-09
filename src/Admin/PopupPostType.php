@@ -27,23 +27,22 @@ class PopupPostType {
 
         $args = array(
             'labels'             => $labels,
-            'public'             => false,
-            'publicly_queryable' => false,
-            'show_ui'            => true,
-            'show_in_menu'       => true,
-            'query_var'          => true,
+            'hierarchical'        => false,
+            'public'              => true,
+            "publicly_queryable" => true,
+            'show_ui'             => true,
             'rewrite'            => array('slug' => 'popup'),
-            'capability_type'    => 'post',
+            'can_export'          => true,
+            'capability_type'     => 'post',
+            'query_var' => true,
+            'supports'           => array('title','elementor'),
             'has_archive'        => false,
-            'hierarchical'       => false,
-            'menu_position'      => null,
-            'supports'           => array('title', 'elementor')
         );
 
         register_post_type('xgenious_popup', $args);
     }
 
     public function remove_editor_from_post_type() {
-        remove_post_type_support('xgenious_popup', 'editor');
+//        remove_post_type_support('xgenious_popup', 'editor');
     }
 }

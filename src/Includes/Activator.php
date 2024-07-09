@@ -15,24 +15,27 @@ class Activator {
 
         $sql = [];
 
-        $sql[] = "CREATE TABLE IF NOT EXISTS $settings_table (
-            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-            popup_id bigint(20) unsigned NOT NULL,
-            setting_key varchar(191) NOT NULL,
-            setting_value longtext NOT NULL,
-            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            UNIQUE KEY popup_setting (popup_id, setting_key)
-        ) $charset_collate;";
+//        $sql[] = "CREATE TABLE IF NOT EXISTS $settings_table (
+//            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+//            popup_id bigint(20) unsigned NOT NULL,
+//            setting_key varchar(191) NOT NULL,
+//            setting_value longtext NOT NULL,
+//            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+//            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+//            PRIMARY KEY (id),
+//            UNIQUE KEY popup_setting (popup_id, setting_key)
+//        ) $charset_collate;";
 
         $sql[] = "CREATE TABLE IF NOT EXISTS $analytics_table (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             popup_id bigint(20) unsigned NOT NULL,
             visitor_ip varchar(45) NOT NULL,
-            visitor_country varchar(2) NOT NULL,
+            visitor_country varchar(100) NOT NULL,
+            device varchar(100) NOT NULL,
             page_url varchar(2083) NOT NULL,
             user_agent varchar(255) NOT NULL,
+            browser varchar(50) NOT NULL,
+            os varchar(50) NOT NULL,
             is_unique tinyint(1) NOT NULL DEFAULT '1',
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),

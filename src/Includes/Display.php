@@ -1,19 +1,26 @@
 <?php
 namespace Xgenious\PopupBuilder\Includes;
 
+use GeoIp2\Database\Reader;
+use WhichBrowser\Parser;
+
 class Display {
+    private $geoip_reader;
     public function __construct() {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
-        add_action('wp_footer', array($this, 'display_popup'));
+        add_action('wp_ajax_record_popup_view', array($this, 'record_popup_view'));
+        add_action('wp_ajax_nopriv_record_popup_view', array($this, 'record_popup_view'));
+
+        $this->geoip_reader = new Reader(XGENIOUS_POPUP_PATH . 'data/GeoLite2-Country.mmdb');
     }
 
     public function enqueue_styles() {
-        wp_enqueue_style('xgenious-popup-public', XGENIOUS_POPUP_URL . 'public/css/popup-public.css', array(), XGENIOUS_POPUP_VERSION, 'all');
+        wp_enqueue_style('xgenious-popup-public', XGENIOUS_POPUP_URL . 'assets/public/css/popup-public.css', array(), XGENIOUS_POPUP_VERSION, 'all');
     }
 
     public function enqueue_scripts() {
-        wp_enqueue_script('xgenious-popup-public', XGENIOUS_POPUP_URL . 'public/js/popup-public.js', array('jquery'), XGENIOUS_POPUP_VERSION, true);
+        wp_enqueue_script('xgenious-popup-public', XGENIOUS_POPUP_URL . 'assets/public/js/popup-public.js', array('jquery'), XGENIOUS_POPUP_VERSION, true);
         wp_localize_script('xgenious-popup-public', 'xgenious_popup', array(
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('xgenious_popup_nonce')
@@ -22,6 +29,11 @@ class Display {
 
     public function display_popup() {
         $popups = $this->get_active_popups();
+
+        if (empty($popups)) {
+            error_log('No active popups found');
+            return;
+        }
 
         foreach ($popups as $popup) {
             $this->render_popup($popup);
@@ -33,13 +45,6 @@ class Display {
             'post_type' => 'xgenious_popup',
             'post_status' => 'publish',
             'posts_per_page' => -1,
-            'meta_query' => array(
-                array(
-                    'key' => '_xgenious_popup_active',
-                    'value' => '1',
-                    'compare' => '='
-                )
-            )
         );
 
         $popup_query = new \WP_Query($args);
@@ -66,6 +71,25 @@ class Display {
                     var delay = <?php echo esc_js($settings['delay']); ?>;
                     setTimeout(function() {
                         $('#xgenious-popup-' + popupId).show();
+                        $.ajax({
+                            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                            type: 'POST',
+                            data: {
+                                action: 'record_popup_view',
+                                popup_id: popupId,
+                                nonce: '<?php echo wp_create_nonce('record_popup_view_nonce'); ?>'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    console.log('Success:', response.data);
+                                } else {
+                                    console.error('Error:', response.data);
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('AJAX error:', status, error);
+                            }
+                        });
                     }, delay * 1000);
                 });
             </script>
@@ -75,7 +99,28 @@ class Display {
 
     private function get_popup_content($popup_id) {
         $popup = get_post($popup_id);
-        return do_shortcode($popup->post_content);
+        $content = do_shortcode($popup->post_content);
+
+        // If using Elementor
+        if (class_exists('\Elementor\Plugin')) {
+            $content = \Elementor\Plugin::$instance->frontend->get_builder_content_for_display($popup_id);
+        }
+
+        return $content;
+    }
+
+
+
+    private function should_display_popup($settings) {
+        // Check display conditions
+        if ($settings['display_on'] === 'all') {
+            return true;
+        } elseif ($settings['display_on'] === 'specific' && is_singular()) {
+            $current_page_id = get_the_ID();
+            return in_array($current_page_id, (array)$settings['specific_pages']);
+        }
+
+        return false;
     }
 
     private function get_popup_settings($popup_id) {
@@ -83,27 +128,128 @@ class Display {
             'delay' => 0,
             'display_on' => 'all',
             'specific_pages' => array(),
-            'cookie_duration' => 7
         );
 
-        $settings = get_post_meta($popup_id, '_xgenious_popup_settings', true);
-        return wp_parse_args($settings, $defaults);
+        $delay = get_post_meta($popup_id, '_popup_delay', true);
+        $display_on = get_post_meta($popup_id, '_popup_display_on', true);
+        $specific_pages = get_post_meta($popup_id, '_popup_specific_pages', true);
+
+        // Ensure delay is a number
+        $delay = is_numeric($delay) ? intval($delay) : $defaults['delay'];
+
+        return array(
+            'delay' => $delay,
+            'display_on' => $display_on ? $display_on : $defaults['display_on'],
+            'specific_pages' => $specific_pages ? $specific_pages : $defaults['specific_pages'],
+        );
     }
 
-    private function should_display_popup($settings) {
-        // Check if popup has been closed recently
-        if (isset($_COOKIE['xgenious_popup_closed'])) {
-            return false;
+    public function record_popup_view() {
+        if (!check_ajax_referer('record_popup_view_nonce', 'nonce', false)) {
+            wp_send_json_error('Nonce verification failed');
+            return;
         }
 
-        // Check display conditions
-        if ($settings['display_on'] === 'all') {
-            return true;
-        } elseif ($settings['display_on'] === 'specific' && is_singular()) {
-            $current_page_id = get_the_ID();
-            return in_array($current_page_id, $settings['specific_pages']);
+        $popup_id = isset($_POST['popup_id']) ? intval($_POST['popup_id']) : 0;
+
+        if (!$popup_id) {
+            wp_send_json_error('Invalid popup ID');
+            return;
         }
 
-        return false;
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'xgenious_popup_analytics';
+
+        $visitor_ip = $this->get_client_ip();
+        $current_time = current_time('mysql');
+        $last_24_hours = date('Y-m-d H:i:s', strtotime('-24 hours'));
+
+        // Check for existing view in last 24 hours
+        $existing_view = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM $table_name WHERE popup_id = %d AND visitor_ip = %s AND created_at > %s",
+            $popup_id, $visitor_ip, $last_24_hours
+        ));
+
+        $is_unique = $existing_view ? 0 : 1;
+
+        $visitor_info = $this->get_visitor_info();
+
+        $result = $wpdb->insert(
+            $table_name,
+            array(
+                'popup_id' => $popup_id,
+                'visitor_ip' => $visitor_info['ip'],
+                'visitor_country' => $visitor_info['country'],
+                'page_url' => isset($_SERVER['HTTP_REFERER']) ? esc_url_raw($_SERVER['HTTP_REFERER']) : '',
+                'user_agent' => $visitor_info['user_agent'],
+                'browser' => $visitor_info['browser'],
+                'os' => $visitor_info['os'],
+                'device' => $visitor_info['device'],
+                'is_unique' => 1, // You might want to implement logic to determine if it's a unique view
+                'created_at' => current_time('mysql')
+            ),
+            array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s')
+        );
+
+
+        if ($result === false) {
+            wp_send_json_error('Database insert failed: ' . $wpdb->last_error);
+        } else {
+            wp_send_json_success('Data inserted successfully. Insert ID: ' . $wpdb->insert_id);
+        }
     }
+    private function get_visitor_info() {
+        $ip = $this->get_client_ip();
+        $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+
+        try {
+            $record = $this->geoip_reader->country($ip);
+            $country = $record->country->isoCode;
+        } catch (\Exception $e) {
+            $country = 'Unknown';
+        }
+
+        $parser = new Parser($user_agent);
+
+        return [
+            'ip' => $ip,
+            'country' => $country,
+            'user_agent' => $user_agent,
+            'browser' => $parser->browser->name ?? 'Unknown',
+            'os' => $parser->os->name ?? 'Unknown',
+            'device' => $this->get_device_type($parser),
+        ];
+    }
+    private function get_device_type($parser) {
+        if ($parser->isType('mobile')) {
+            return 'Mobile';
+        } elseif ($parser->isType('tablet')) {
+            return 'Tablet';
+        } elseif ($parser->isType('desktop')) {
+            return 'Desktop';
+        } else {
+            return 'Other';
+        }
+    }
+    private function get_client_ip() {
+        $ip_keys = array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR');
+        foreach ($ip_keys as $key) {
+            if (array_key_exists($key, $_SERVER) === true) {
+                foreach (explode(',', $_SERVER[$key]) as $ip) {
+                    $ip = trim($ip);
+                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
+                        return $ip;
+                    }
+                }
+            }
+        }
+        return '0.0.0.0';
+    }
+
+    private function get_visitor_country() {
+        // Implement your logic to get visitor country
+        // You might want to use a geolocation service or database
+        return 'Unknown';
+    }
+
 }

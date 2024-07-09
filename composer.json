@@ -3,7 +3,9 @@
   "description": "A plugin to create and manage popups using Elementor",
   "type": "wordpress-plugin",
   "require": {
-    "php": ">=7.2"
+    "php": ">=7.2",
+    "geoip2/geoip2": "~2.0",
+    "whichbrowser/parser": "^2.1"
   },
   "autoload": {
     "psr-4": {

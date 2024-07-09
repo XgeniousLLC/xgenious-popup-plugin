@@ -1,0 +1,8 @@
+.date-range-selector {
+    margin-bottom: 20px;
+}
+
+.date-range-selector select {
+    padding: 5px;
+    font-size: 14px;
+}
