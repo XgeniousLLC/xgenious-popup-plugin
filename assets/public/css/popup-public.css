@@ -21,11 +21,10 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: #fff;
-    padding: 20px;
     max-width: 80%;
     max-height: 80%;
     overflow: auto;
+    min-width: 75%;
 }
 
 .xgenious-popup-close {
@@ -34,6 +33,8 @@
     right: 10px;
     font-size: 24px;
     cursor: pointer;
+    z-index: 999;
+    border: none;
 }
 .xgenious-popup-progress-bar {
     position: absolute;
@@ -49,43 +50,6 @@
     height: 100%;
     background-color: #4CAF50; /* You can change this color */
 }
-
-
-/* Popup */
-.xgenious-popup {
-    display: block;
-    position: fixed;
-    z-index: 999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
-    padding-top: 60px;
-    visibility: hidden;
-    opacity: 0;
-    transition: all ease-in-out .5s;
-}
-
-.xgenious-popup .popup-content {
-    padding: 20px 0;
-}
-
-.xgenious-popup .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.xgenious-popup .close:hover,
-.xgenious-popup .close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
-
 
 /* Banner Two css */
 .xgenious-popup .banner-two-wraper {
@@ -148,6 +112,23 @@
     color:#A760FE;
     text-align: center;
 }
+.xgenious-popup .pera ul {
+    text-align: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.xgenious-popup .pera ul li {
+    margin-right: 20px;
+    font-size: 20px;
+    color: #862BF2;
+    font-weight: bold;
+}
+
 .xgenious-popup .banner-two .pera .grab-deal-btn {
     background: linear-gradient(#9E4DFF , #600EC0);
     padding: 20px 16px;

@@ -201,13 +201,12 @@ class PopupWidgetTwo extends Widget_Base
         $banner_right_image = ! empty( $settings['banner_right_image']['url'] ) ? $settings['banner_right_image']['url'] : [];
         $image_link = ! empty( $settings['brand_image']['url'] ) ? $settings['brand_image']['url'] : [];
         ?>
-        <div id="popup" class="xgenious-popup">
+
             <div class="popup-content">
                 <div class="banner-two">
-                    <div class="container">
+                    <div class="">
                         <div class="banner-two-wraper" style="background-image: url('<?php echo esc_url( $bg_image_link ); ?>') ">
                             <div class="row g-4">
-                                <span class="close text-end m-auto">&times;</span>
                                 <div class="col-lg-5">
                                     <div class="logo-part">
                                         <div class="logo-img text-center">
@@ -230,6 +229,11 @@ class PopupWidgetTwo extends Widget_Base
                                     </div>
                                     <div class="pera">
                                         <p class="offer"><?php printf( esc_html__( '%s', 'hexcoupon-master' ), esc_html( $settings['limited_time_offer_text'] ) ); ?></p>
+                                        <ul>
+                                            <li>Coupon</li>
+                                            <li>Store Credit</li>
+                                            <li>Loyalty Program</li>
+                                        </ul>
                                         <div class="btn-wraper">
                                             <a href="<?php echo esc_url( $settings['button_link']['url'] ); ?>" class="cmn-btn grab-deal-btn"><?php printf( esc_html__( '%s', 'hexcoupon-master' ), esc_html( $settings['button_text'] ) ); ?></a>
                                         </div>
@@ -245,7 +249,7 @@ class PopupWidgetTwo extends Widget_Base
                     </div>
                 </div>
             </div>
-        </div>
+
         <?php
     }
 }
