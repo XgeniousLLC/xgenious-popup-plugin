@@ -53,21 +53,7 @@ namespace Xgenious\PopupBuilder\Elementor;
             if( !class_exists('Elementor\Widget_Base') ){
                 return;
             }
-            $elementor_widgets = array(
-                'PopupWidget',
-                'PopupWidgetTwo',
-            );
-
-            $elementor_widgets = apply_filters('xgenious_popup_elementor_widget',$elementor_widgets);
-            sort($elementor_widgets);
-            if ( is_array($elementor_widgets) && !empty($elementor_widgets) ) {
-                foreach ( $elementor_widgets as $widget ){
-                    if(file_exists(XGENIOUS_POPUP_PATH.'src/Elementor/Widgets/'.$widget.'.php')){
-                        require_once XGENIOUS_POPUP_PATH.'src/Elementor/Widgets/'.$widget.'.php';
-                    }
-                }
-            }
-
+            $widgets_manager->register( new \Xgenious\PopupBuilder\Elementor\Widgets\PopupWidgetTwo() );
         }
 
     }

@@ -83,9 +83,9 @@ class Display {
             <script>
                 jQuery(document).ready(function($) {
                     var popupId = '<?php echo esc_js($popup_id); ?>';
-                    var delay = <?php echo esc_js($settings['delay']); ?>;
+                    var delay = <?php echo esc_js( !empty($settings['delay'] ) ? $settings['delay'] : 0) ; ?>;
                     var autoClose = <?php echo $settings['close_automatically'] ? 'true' : 'false'; ?>;
-                    var autoCloseTime = <?php echo esc_js($settings['auto_close_time']); ?>;
+                    var autoCloseTime = <?php echo esc_js(!empty($settings['auto_close_time']) ? $settings['auto_close_time'] : 0); ?>;
                     var endTime = '<?php echo esc_js($settings['end_time']); ?>';
 
                     setTimeout(function() {
@@ -102,13 +102,13 @@ class Display {
                                 },
                                 success: function(response) {
                                     if (response.success) {
-                                        console.log('Success:', response.data);
+                                       // console.log('Success:', response.data);
                                     } else {
-                                        console.error('Error:', response.data);
+                                        //console.error('Error:', response.data);
                                     }
                                 },
                                 error: function(xhr, status, error) {
-                                    console.error('AJAX error:', status, error);
+                                   // console.error('AJAX error:', status, error);
                                 }
                             });
 
@@ -126,13 +126,13 @@ class Display {
                                     },
                                     success: function(response) {
                                         if (response.success) {
-                                            console.log('Link click recorded:', response.data);
+                                           // console.log('Link click recorded:', response.data);
                                         } else {
-                                            console.error('Error recording link click:', response.data);
+                                            //console.error('Error recording link click:', response.data);
                                         }
                                     },
                                     error: function(xhr, status, error) {
-                                        console.error('AJAX error:', status, error);
+                                        //console.error('AJAX error:', status, error);
                                     }
                                 });
                             });
@@ -299,7 +299,7 @@ class Display {
 
         try {
             $record = $this->geoip_reader->country($ip);
-            $country = $record->country->isoCode;
+            $country = $record->country->name;
         } catch (\Exception $e) {
             $country = 'Unknown';
         }
@@ -339,12 +339,6 @@ class Display {
             }
         }
         return '0.0.0.0';
-    }
-
-    private function get_visitor_country() {
-        // Implement your logic to get visitor country
-        // You might want to use a geolocation service or database
-        return 'Unknown';
     }
 
 }
