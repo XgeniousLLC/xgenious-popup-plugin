@@ -201,7 +201,7 @@ class PopupWidgetTwo extends Widget_Base
         $banner_right_image = ! empty( $settings['banner_right_image']['url'] ) ? $settings['banner_right_image']['url'] : [];
         $image_link = ! empty( $settings['brand_image']['url'] ) ? $settings['brand_image']['url'] : [];
         ?>
-        <div id="popup" class="popup">
+        <div id="popup" class="xgenious-popup">
             <div class="popup-content">
                 <div class="banner-two">
                     <div class="container">

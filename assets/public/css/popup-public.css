@@ -52,7 +52,7 @@
 
 
 /* Popup */
-.popup {
+.xgenious-popup {
     display: block;
     position: fixed;
     z-index: 999;
@@ -68,19 +68,19 @@
     transition: all ease-in-out .5s;
 }
 
-.popup-content {
+.xgenious-popup .popup-content {
     padding: 20px 0;
 }
 
-.close {
+.xgenious-popup .close {
     color: #aaa;
     float: right;
     font-size: 28px;
     font-weight: bold;
 }
 
-.close:hover,
-.close:focus {
+.xgenious-popup .close:hover,
+.xgenious-popup .close:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
@@ -88,21 +88,21 @@
 
 
 /* Banner Two css */
-.banner-two-wraper {
+.xgenious-popup .banner-two-wraper {
     padding:42px 20px;
     background-color:#e8d6ff ;
     background-size: cover;
     background-repeat: no-repeat;
     border-radius: 20px;
 }
-.banner-two .logo-text {
+.xgenious-popup .banner-two .logo-text {
     color: #001457;
     font-size: 36px;
     font-weight: 800;
     line-height: 1.3;
     margin-top:12px;
 }
-.banner-two .discount-part {
+.xgenious-popup .banner-two .discount-part {
     max-width: 487px;
     text-align: center;
     margin-top: 20px;
@@ -110,7 +110,7 @@
     margin-left: auto;
     margin-right: auto;
 }
-.banner-two .discount-part .early-bird{
+.xgenious-popup .banner-two .discount-part .early-bird{
     background: #FF6745;
     padding: 6px 20px;
     display: flex;
@@ -120,7 +120,7 @@
     margin-left: auto;
     margin-right: auto;
 }
-.banner-two .discount-part .early-bird h3{
+.xgenious-popup .banner-two .discount-part .early-bird h3{
     font-size: 20px;
     font-weight: 800;
     line-height: 28px;
@@ -128,7 +128,7 @@
     margin-bottom: 0;
     text-align: center;
 }
-.banner-two .discount-part .discount h3 {
+.xgenious-popup .banner-two .discount-part .discount h3 {
     background: #862BF2;
     padding:10px 20px;
     color:#fff;
@@ -142,13 +142,13 @@
     margin-right: auto;
     margin-bottom: 0;
 }
-.banner-two .pera {
+.xgenious-popup .banner-two .pera {
     font-size: 20px;
     line-height: 28px;
     color:#A760FE;
     text-align: center;
 }
-.banner-two .pera .grab-deal-btn {
+.xgenious-popup .banner-two .pera .grab-deal-btn {
     background: linear-gradient(#9E4DFF , #600EC0);
     padding: 20px 16px;
     font-size: 26px;

@@ -49,7 +49,7 @@ namespace Xgenious\PopupBuilder\Elementor;
          * _widget_registered()
          * @since 1.0.0
          * */
-        public function _widget_registered(){
+        public function _widget_registered($widgets_manager){
             if( !class_exists('Elementor\Widget_Base') ){
                 return;
             }
