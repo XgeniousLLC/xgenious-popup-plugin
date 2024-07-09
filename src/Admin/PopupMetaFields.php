@@ -24,6 +24,9 @@ class PopupMetaFields {
         $delay = get_post_meta($post->ID, '_popup_delay', true);
         $display_on = get_post_meta($post->ID, '_popup_display_on', true);
         $specific_pages = get_post_meta($post->ID, '_popup_specific_pages', true);
+        $end_time = get_post_meta($post->ID, '_popup_end_time', true);
+        $close_automatically = get_post_meta($post->ID, '_popup_close_automatically', true);
+        $auto_close_time = get_post_meta($post->ID, '_popup_auto_close_time', true);
 
         ?>
         <p>
@@ -51,6 +54,20 @@ class PopupMetaFields {
                 </select>
             </p>
         </div>
+        <p>
+            <label for="popup_end_time"><?php _e('Popup End Time:', 'xgenious-popup-builder'); ?></label>
+            <input type="datetime-local" id="popup_end_time" name="popup_end_time" value="<?php echo esc_attr($end_time); ?>">
+        </p>
+        <p>
+            <label for="popup_close_automatically">
+                <input type="checkbox" id="popup_close_automatically" name="popup_close_automatically" <?php checked($close_automatically, 'on'); ?>>
+                <?php _e('Close automatically', 'xgenious-popup-builder'); ?>
+            </label>
+        </p>
+        <p id="auto_close_time_container" style="<?php echo $close_automatically === 'on' ? 'display:block;' : 'display:none;'; ?>">
+            <label for="popup_auto_close_time"><?php _e('Auto-close after (seconds):', 'xgenious-popup-builder'); ?></label>
+            <input type="number" id="popup_auto_close_time" name="popup_auto_close_time" value="<?php echo esc_attr($auto_close_time); ?>" min="0">
+        </p>
         <script>
             jQuery(document).ready(function($) {
                 $('#popup_display_on').on('change', function() {
@@ -58,6 +75,14 @@ class PopupMetaFields {
                         $('#specific_pages_container').show();
                     } else {
                         $('#specific_pages_container').hide();
+                    }
+                });
+
+                $('#popup_close_automatically').on('change', function() {
+                    if ($(this).is(':checked')) {
+                        $('#auto_close_time_container').show();
+                    } else {
+                        $('#auto_close_time_container').hide();
                     }
                 });
             });
@@ -85,9 +110,15 @@ class PopupMetaFields {
         $delay = isset($_POST['popup_delay']) ? sanitize_text_field($_POST['popup_delay']) : '';
         $display_on = isset($_POST['popup_display_on']) ? sanitize_text_field($_POST['popup_display_on']) : '';
         $specific_pages = isset($_POST['popup_specific_pages']) ? array_map('intval', $_POST['popup_specific_pages']) : array();
+        $end_time = isset($_POST['popup_end_time']) ? sanitize_text_field($_POST['popup_end_time']) : '';
+        $close_automatically = isset($_POST['popup_close_automatically']) ? 'on' : 'off';
+        $auto_close_time = isset($_POST['popup_auto_close_time']) ? sanitize_text_field($_POST['popup_auto_close_time']) : '';
 
         update_post_meta($post_id, '_popup_delay', $delay);
         update_post_meta($post_id, '_popup_display_on', $display_on);
         update_post_meta($post_id, '_popup_specific_pages', $specific_pages);
+        update_post_meta($post_id, '_popup_end_time', $end_time);
+        update_post_meta($post_id, '_popup_close_automatically', $close_automatically);
+        update_post_meta($post_id, '_popup_auto_close_time', $auto_close_time);
     }
 }

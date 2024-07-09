@@ -58,39 +58,71 @@ class Display {
 
         if ($this->should_display_popup($settings)) {
             ?>
-            <div id="xgenious-popup-<?php echo esc_attr($popup_id); ?>" class="xgenious-popup" data-popup-id="<?php echo esc_attr($popup_id); ?>" style="display:none;">
+            <div id="xgenious-popup-<?php echo esc_attr($popup_id); ?>"
+                 class="xgenious-popup"
+                 data-popup-id="<?php echo esc_attr($popup_id); ?>"
+                 data-delay="<?php echo esc_attr($settings['delay']); ?>"
+                 data-auto-close="<?php echo $settings['close_automatically'] ? 'true' : 'false'; ?>"
+                 data-auto-close-time="<?php echo esc_attr($settings['auto_close_time']); ?>"
+                 data-end-time="<?php echo esc_attr($settings['end_time']); ?>"
+                 style="display:none;">
                 <div class="xgenious-popup-overlay"></div>
                 <div class="xgenious-popup-content">
                     <button class="xgenious-popup-close">&times;</button>
                     <?php echo $content; ?>
+                    <?php if ($settings['close_automatically']): ?>
+                        <div class="xgenious-popup-progress-bar">
+                            <div class="xgenious-popup-progress"></div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
             <script>
                 jQuery(document).ready(function($) {
                     var popupId = '<?php echo esc_js($popup_id); ?>';
                     var delay = <?php echo esc_js($settings['delay']); ?>;
+                    var autoClose = <?php echo $settings['close_automatically'] ? 'true' : 'false'; ?>;
+                    var autoCloseTime = <?php echo esc_js($settings['auto_close_time']); ?>;
+                    var endTime = '<?php echo esc_js($settings['end_time']); ?>';
+
                     setTimeout(function() {
-                        $('#xgenious-popup-' + popupId).show();
-                        $.ajax({
-                            url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                            type: 'POST',
-                            data: {
-                                action: 'record_popup_view',
-                                popup_id: popupId,
-                                nonce: '<?php echo wp_create_nonce('record_popup_view_nonce'); ?>'
-                            },
-                            success: function(response) {
-                                if (response.success) {
-                                    console.log('Success:', response.data);
-                                } else {
-                                    console.error('Error:', response.data);
+                        if (new Date() < new Date(endTime) || !endTime) {
+                            var $popup = $('#xgenious-popup-' + popupId);
+                            $popup.show();
+                            $.ajax({
+                                url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                                type: 'POST',
+                                data: {
+                                    action: 'record_popup_view',
+                                    popup_id: popupId,
+                                    nonce: '<?php echo wp_create_nonce('record_popup_view_nonce'); ?>'
+                                },
+                                success: function(response) {
+                                    if (response.success) {
+                                        console.log('Success:', response.data);
+                                    } else {
+                                        console.error('Error:', response.data);
+                                    }
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error('AJAX error:', status, error);
                                 }
-                            },
-                            error: function(xhr, status, error) {
-                                console.error('AJAX error:', status, error);
+                            });
+
+                            if (autoClose && autoCloseTime > 0) {
+                                var $progress = $popup.find('.xgenious-popup-progress');
+                                $progress.animate({
+                                    width: '100%'
+                                }, autoCloseTime * 1000, 'linear', function() {
+                                    $popup.hide();
+                                });
                             }
-                        });
+                        }
                     }, delay * 1000);
+
+                    $('#xgenious-popup-' + popupId + ' .xgenious-popup-close').on('click', function() {
+                        $('#xgenious-popup-' + popupId).hide();
+                    });
                 });
             </script>
             <?php
@@ -113,6 +145,11 @@ class Display {
 
     private function should_display_popup($settings) {
         // Check display conditions
+        if (!empty($settings['end_time']) && new \DateTime() > new \DateTime($settings['end_time'])) {
+            return false;
+        }
+
+        // Check display conditions
         if ($settings['display_on'] === 'all') {
             return true;
         } elseif ($settings['display_on'] === 'specific' && is_singular()) {
@@ -128,20 +165,21 @@ class Display {
             'delay' => 0,
             'display_on' => 'all',
             'specific_pages' => array(),
+            'end_time' => '',
+            'close_automatically' => false,
+            'auto_close_time' => 0,
         );
 
-        $delay = get_post_meta($popup_id, '_popup_delay', true);
-        $display_on = get_post_meta($popup_id, '_popup_display_on', true);
-        $specific_pages = get_post_meta($popup_id, '_popup_specific_pages', true);
-
-        // Ensure delay is a number
-        $delay = is_numeric($delay) ? intval($delay) : $defaults['delay'];
-
-        return array(
-            'delay' => $delay,
-            'display_on' => $display_on ? $display_on : $defaults['display_on'],
-            'specific_pages' => $specific_pages ? $specific_pages : $defaults['specific_pages'],
+        $settings = array(
+            'delay' => get_post_meta($popup_id, '_popup_delay', true),
+            'display_on' => get_post_meta($popup_id, '_popup_display_on', true),
+            'specific_pages' => get_post_meta($popup_id, '_popup_specific_pages', true),
+            'end_time' => get_post_meta($popup_id, '_popup_end_time', true),
+            'close_automatically' => get_post_meta($popup_id, '_popup_close_automatically', true) === 'on',
+            'auto_close_time' => get_post_meta($popup_id, '_popup_auto_close_time', true),
         );
+
+        return wp_parse_args($settings, $defaults);
     }
 
     public function record_popup_view() {
