@@ -201,6 +201,12 @@ class Display {
     }
 
     private function should_display_popup($settings) {
+
+        // do not show popup in elementor editor page
+        if ($this->is_elementor_editor()) {
+            return false;
+        }
+
         // Check display conditions
         if (!empty($settings['end_time']) && new \DateTime() > new \DateTime($settings['end_time'])) {
             return false;
@@ -339,6 +345,22 @@ class Display {
             }
         }
         return '0.0.0.0';
+    }
+
+    private function is_elementor_editor() {
+        if (isset($_GET['elementor-preview'])) {
+            return true;
+        }
+        if (isset($_GET['action']) && $_GET['action'] === 'elementor') {
+            return true;
+        }
+        if (isset($_SERVER['HTTP_REFERER'])) {
+            $referer = $_SERVER['HTTP_REFERER'];
+            if (strpos($referer, 'elementor-preview') !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
