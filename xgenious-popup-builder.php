@@ -2,7 +2,7 @@
 /*
 Plugin Name: Xgenious Popup Builder
 Description: A plugin to create and manage popups using Elementor
-Version: 1.0
+Version: 1.0.1
 Author: Xgenious
 Text Domain: xgenious-popup-builder
 Domain Path: /languages
