@@ -133,12 +133,21 @@
 .xgenious-popup .pera ul li {
     margin-right: 20px;
     font-size: 20px;
-    color: #862BF2;
-    font-weight: bold;
+    color: #6d6970;
+    font-weight: 700
 }
 
 .xgenious-popup .pera ul li i {
-    margin-right: 6px;
+    display: inline-block;
+    width: 35px;
+    height: 35px;
+    text-align: center;
+    background-color: #903FF1;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 35px;
+    color: #fff;
+    margin-right: 10px;
 }
 
 .xgenious-popup .banner-two .pera .grab-deal-btn {
