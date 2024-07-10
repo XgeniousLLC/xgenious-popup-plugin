@@ -24,6 +24,7 @@ class PopupMetaFields {
         $delay = get_post_meta($post->ID, '_popup_delay', true);
         $display_on = get_post_meta($post->ID, '_popup_display_on', true);
         $specific_pages = get_post_meta($post->ID, '_popup_specific_pages', true);
+        $excluded_pages = get_post_meta($post->ID, '_popup_excluded_pages', true);
         $end_time = get_post_meta($post->ID, '_popup_end_time', true);
         $close_automatically = get_post_meta($post->ID, '_popup_close_automatically', true);
         $auto_close_time = get_post_meta($post->ID, '_popup_auto_close_time', true);
@@ -54,6 +55,19 @@ class PopupMetaFields {
                 </select>
             </p>
         </div>
+        <div id="excluded_pages_container" style="<?php echo $display_on === 'all' ? 'display:block;' : 'display:none;'; ?>">
+            <p>
+                <label for="popup_excluded_pages"><?php _e('Exclude Pages:', 'xgenious-popup-builder'); ?></label>
+                <select id="popup_excluded_pages" name="popup_excluded_pages[]" multiple style="width: 100%; max-width: 400px;">
+                    <?php
+                    foreach ($pages as $page) {
+                        $selected = in_array($page->ID, (array)$excluded_pages) ? 'selected' : '';
+                        echo '<option value="' . esc_attr($page->ID) . '" ' . $selected . '>' . esc_html($page->post_title) . '</option>';
+                    }
+                    ?>
+                </select>
+            </p>
+        </div>
         <p>
             <label for="popup_end_time"><?php _e('Popup End Time:', 'xgenious-popup-builder'); ?></label>
             <input type="datetime-local" id="popup_end_time" name="popup_end_time" value="<?php echo esc_attr($end_time); ?>">
@@ -73,8 +87,10 @@ class PopupMetaFields {
                 $('#popup_display_on').on('change', function() {
                     if ($(this).val() === 'specific') {
                         $('#specific_pages_container').show();
+                        $('#excluded_pages_container').hide();
                     } else {
                         $('#specific_pages_container').hide();
+                        $('#excluded_pages_container').show();
                     }
                 });
 
@@ -110,6 +126,7 @@ class PopupMetaFields {
         $delay = isset($_POST['popup_delay']) ? sanitize_text_field($_POST['popup_delay']) : '';
         $display_on = isset($_POST['popup_display_on']) ? sanitize_text_field($_POST['popup_display_on']) : '';
         $specific_pages = isset($_POST['popup_specific_pages']) ? array_map('intval', $_POST['popup_specific_pages']) : array();
+        $excluded_pages = isset($_POST['popup_excluded_pages']) ? array_map('intval', $_POST['popup_excluded_pages']) : array();
         $end_time = isset($_POST['popup_end_time']) ? sanitize_text_field($_POST['popup_end_time']) : '';
         $close_automatically = isset($_POST['popup_close_automatically']) ? 'on' : 'off';
         $auto_close_time = isset($_POST['popup_auto_close_time']) ? sanitize_text_field($_POST['popup_auto_close_time']) : '';
@@ -117,6 +134,7 @@ class PopupMetaFields {
         update_post_meta($post_id, '_popup_delay', $delay);
         update_post_meta($post_id, '_popup_display_on', $display_on);
         update_post_meta($post_id, '_popup_specific_pages', $specific_pages);
+        update_post_meta($post_id, '_popup_excluded_pages', $excluded_pages);
         update_post_meta($post_id, '_popup_end_time', $end_time);
         update_post_meta($post_id, '_popup_close_automatically', $close_automatically);
         update_post_meta($post_id, '_popup_auto_close_time', $auto_close_time);

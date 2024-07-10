@@ -203,14 +203,20 @@ class Display {
     }
 
     private function should_display_popup($settings) {
-
-        // do not show popup in elementor editor page
+        // Do not show popup in elementor editor page
         if ($this->is_elementor_editor()) {
             return false;
         }
 
-        // Check display conditions
+        // Check if the popup has expired
         if (!empty($settings['end_time']) && new \DateTime() > new \DateTime($settings['end_time'])) {
+            return false;
+        }
+
+        $current_page_id = get_the_ID();
+
+        // Check if the current page is in the excluded pages list
+        if (in_array($current_page_id, (array)$settings['excluded_pages'])) {
             return false;
         }
 
@@ -218,18 +224,19 @@ class Display {
         if ($settings['display_on'] === 'all') {
             return true;
         } elseif ($settings['display_on'] === 'specific' && is_singular()) {
-            $current_page_id = get_the_ID();
             return in_array($current_page_id, (array)$settings['specific_pages']);
         }
 
         return false;
     }
 
+
     private function get_popup_settings($popup_id) {
         $defaults = array(
             'delay' => 0,
             'display_on' => 'all',
             'specific_pages' => array(),
+            'excluded_pages' => array(), // Add this line
             'end_time' => '',
             'close_automatically' => false,
             'auto_close_time' => 0,
@@ -239,6 +246,7 @@ class Display {
             'delay' => get_post_meta($popup_id, '_popup_delay', true),
             'display_on' => get_post_meta($popup_id, '_popup_display_on', true),
             'specific_pages' => get_post_meta($popup_id, '_popup_specific_pages', true),
+            'excluded_pages' => get_post_meta($popup_id, '_popup_excluded_pages', true), // Add this line
             'end_time' => get_post_meta($popup_id, '_popup_end_time', true),
             'close_automatically' => get_post_meta($popup_id, '_popup_close_automatically', true) === 'on',
             'auto_close_time' => get_post_meta($popup_id, '_popup_auto_close_time', true),
