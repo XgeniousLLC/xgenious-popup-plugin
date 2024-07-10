@@ -19,10 +19,12 @@ class Display {
     }
 
     public function enqueue_styles() {
+        wp_enqueue_style('xgenious-bootstrap-public', XGENIOUS_POPUP_URL . 'assets/public/css/bootstrap.min.css', array(), XGENIOUS_POPUP_VERSION, 'all');
         wp_enqueue_style('xgenious-popup-public', XGENIOUS_POPUP_URL . 'assets/public/css/popup-public.css', array(), XGENIOUS_POPUP_VERSION, 'all');
     }
 
     public function enqueue_scripts() {
+        wp_enqueue_script('xgenious-bootstrap-public', XGENIOUS_POPUP_URL . 'assets/public/js/bootstrap.bundle.min.js', array('jquery'), XGENIOUS_POPUP_VERSION, true);
         wp_enqueue_script('xgenious-popup-public', XGENIOUS_POPUP_URL . 'assets/public/js/popup-public.js', array('jquery'), XGENIOUS_POPUP_VERSION, true);
         wp_localize_script('xgenious-popup-public', 'xgenious_popup', array(
             'ajax_url' => admin_url('admin-ajax.php'),

@@ -154,7 +154,7 @@ class PopupWidgetTwo extends Widget_Base
             [
                 'label' => esc_html__( 'Limited Time Offer Text', 'hexcoupon-master' ),
                 'type' => \Elementor\Controls_Manager::TEXT,
-                'default' => esc_html__( 'LIMITED TIME OFFER 路 OFFER ENDS SOON', 'hexcoupon-master' ),
+                'default' => esc_html__( 'LIMITED TIME OFFER . OFFER ENDS SOON', 'hexcoupon-master' ),
                 'placeholder' => esc_html__( 'Type your text here', 'hexcoupon-master' ),
             ]
         );
@@ -183,6 +183,46 @@ class PopupWidgetTwo extends Widget_Base
                 'label_block' => true,
             ]
         );
+
+        $this->add_control(
+            'features_list',
+            [
+                'label' => esc_html__( 'Features List', 'textdomain' ),
+                'type' => \Elementor\Controls_Manager::REPEATER,
+                'fields' => [
+                    [
+                        'name' => 'list_title',
+                        'label' => esc_html__( 'Title', 'textdomain' ),
+                        'type' => \Elementor\Controls_Manager::TEXT,
+                        'default' => esc_html__( 'List Title' , 'textdomain' ),
+                        'label_block' => true,
+                    ],
+                    [
+                        'name' => 'list_icon',
+                        'label' => esc_html__( 'Icon', 'textdomain' ),
+                        'type' => \Elementor\Controls_Manager::ICONS,
+                        'default' => [
+                            'value' => 'fas fa-circle',
+                            'library' => 'fa-solid',
+                        ],
+                        'recommended' => [
+                            'fa-solid' => [
+                                'circle',
+                                'dot-circle',
+                                'square-full',
+                            ],
+                            'fa-regular' => [
+                                'circle',
+                                'dot-circle',
+                                'square-full',
+                            ],
+                        ],
+                    ]
+                ],
+
+            ]
+        );
+
         $this->end_controls_section();
 
     }
@@ -229,10 +269,15 @@ class PopupWidgetTwo extends Widget_Base
                                     </div>
                                     <div class="pera">
                                         <p class="offer"><?php printf( esc_html__( '%s', 'hexcoupon-master' ), esc_html( $settings['limited_time_offer_text'] ) ); ?></p>
-                                        <ul>
-                                            <li>Coupon</li>
-                                            <li>Store Credit</li>
-                                            <li>Loyalty Program</li>
+                                        <ul class="popup_lists">
+                                            <?php if ( $settings['features_list'] ) : foreach ( $settings['features_list'] as $item ) : ?>
+                                            <li>
+                                                <?php
+                                                \Elementor\Icons_Manager::render_icon( $item['list_icon'], ['aria-hidden' => 'true'] );
+                                                printf( esc_html__( '%s', 'hex-coupon-for-woocommerce' ), esc_html( $item['list_title'] ) );
+                                                ?>
+                                            </li>
+                                            <?php endforeach; endif; ?>
                                         </ul>
                                         <div class="btn-wraper">
                                             <a href="<?php echo esc_url( $settings['button_link']['url'] ); ?>" class="cmn-btn grab-deal-btn"><?php printf( esc_html__( '%s', 'hexcoupon-master' ), esc_html( $settings['button_text'] ) ); ?></a>
